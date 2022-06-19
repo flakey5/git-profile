@@ -10,6 +10,30 @@ Tool for managing multiple Git configurations. This only handles stuff in the `.
  * `git-profile edit <profile name>` - Edit a profile
  * `git-profile delete <profile name>` - Delete a profile
 
+## Profile schema
+Each profile has its own .json file. Here's an example of how it should look like:
+```json
+{
+    "user": {
+        "email": "testing@example.com",
+        "name": "testing123"
+    },
+    "init": {
+        "defaultBranch": "main"
+    }
+}
+```
+
+When this profile is generated, this will be written to your `.gitconfig`:
+
+```
+[user]
+    email = testing@example.com
+    name = testing123
+[init]
+    defaultBranch = main
+```
+
 ## Compiling
 This is just a .NET 6 console app, so open the solution in `src/` and build in Visual Studio or via the .NET CLI. The only NuGet dependency is Newtonsoft.Json.
 
