@@ -88,7 +88,7 @@ namespace gitprofile {
         }
 
         private static void initialSetup() {
-            Console.WriteLine("Hello! It looks like this is your first time running git-profile, so please select your preferred text editor for JSON files and create your first profile!");
+            Console.WriteLine("Hello! It looks like this is your first time running git-profile, so please select your preferred text editor and create your first profile!");
 
             if (!Directory.Exists(PROFILES_DIRECTORY))
                 Directory.CreateDirectory(PROFILES_DIRECTORY);
@@ -122,23 +122,15 @@ namespace gitprofile {
         private static void printProfiles() {
             Console.WriteLine("Available profiles:");
 
-            foreach (string fileName in Directory.GetFiles(PROFILES_DIRECTORY, "*.json")) {
+            foreach (string fileName in Directory.GetFiles(PROFILES_DIRECTORY, "*.gitconfig")) {
                 Console.WriteLine(Path.GetFileNameWithoutExtension(fileName));
             }
         }
 
         private static void switchProfile(string name) {
-            string profilePath = Path.Join(PROFILES_DIRECTORY, $"{name}.json");
+            string profilePath = Path.Join(PROFILES_DIRECTORY, $"{name}.gitconfig");
             if (!File.Exists(profilePath)) {
                 Console.WriteLine($"Profile with name {name} does not exist!");
-                return;
-            }
-
-            Dictionary<string, Dictionary<string, string>>? profile = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(
-                File.ReadAllText(profilePath)
-            );
-            if (profile == null) {
-                Console.WriteLine($"Failed parsing profile {name}");
                 return;
             }
 
@@ -148,35 +140,28 @@ namespace gitprofile {
                 return;
             }
 
-            string gitConfigText = "";
-            foreach (KeyValuePair<string, Dictionary<string, string>> entry in profile) {
-                gitConfigText += $"[{entry.Key}]\n";
-
-                foreach (KeyValuePair<string, string> options in entry.Value) {
-                    gitConfigText += $"    {options.Key} = {options.Value}\n";
-                }
-            }
-
-            File.WriteAllText(gitConfigPath, gitConfigText);
+            File.Delete(gitConfigPath);
+            File.Copy(profilePath, gitConfigPath);
             
             configuration.currentProfile = name;
             File.WriteAllText(CONFIG_FILE_PATH, JsonConvert.SerializeObject(configuration));
+
+            Console.WriteLine($"Switched to profile {name}");
         }
 
         private static void createProfile(string name) {
-            string profilePath = Path.Join(PROFILES_DIRECTORY, $"{name}.json");
+            string profilePath = Path.Join(PROFILES_DIRECTORY, $"{name}.gitconfig");
             if (File.Exists(profilePath)) {
                 Console.WriteLine($"Profile with name {name} already exists!");
                 return;
             }
 
-            File.WriteAllText(profilePath, "{\n\n}");
-
+            File.Create(profilePath);
             Process.Start(configuration.preferredTextEditor, profilePath);
         }
 
         private static void editProfile(string name) {
-            string profilePath = Path.Join(PROFILES_DIRECTORY, $"{name}.json");
+            string profilePath = Path.Join(PROFILES_DIRECTORY, $"{name}.gitconfig");
             if (!File.Exists(profilePath)) {
                 Console.WriteLine($"Profile with name {name} does not exist!");
                 return;
@@ -186,7 +171,7 @@ namespace gitprofile {
         }
 
         private static void deleteProfile(string name) {
-            string profilePath = Path.Join(PROFILES_DIRECTORY, $"{name}.json");
+            string profilePath = Path.Join(PROFILES_DIRECTORY, $"{name}.gitconfig");
             if (!File.Exists(profilePath)) {
                 Console.WriteLine($"Profile with name {name} does not exist!");
                 return;
